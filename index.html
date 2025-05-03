@@ -1,0 +1,23 @@
+<input type="file" id="fileInput" />
+<button onclick="uploadFile()">Upload</button>
+<p id="status"></p>
+
+<script>
+  async function uploadFile() {
+    const file = document.getElementById("fileInput").files[0];
+    if (!file) return alert("Please choose a file.");
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    document.getElementById("status").innerText = "Uploading...";
+
+    const res = await fetch("https://<your-api-id>.execute-api.<region>.amazonaws.com/prod/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    const result = await res.json();
+    document.getElementById("status").innerText = result.message || "Done.";
+  }
+</script>
