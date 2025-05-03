@@ -1,25 +1,41 @@
 <!DOCTYPE html>
-<input type="file" id="fileInput" />
-<button onclick="uploadFile()">Upload</button>
-<p id="status"></p>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Secure File Upload</title>
+  <!-- Favicon fix to avoid 404 -->
+  <link rel="icon" href="data:,">
+</head>
+<body>
+  <input type="file" id="fileInput" />
+  <button onclick="uploadFile()">Upload</button>
+  <p id="status"></p>
 
-<script>
-  async function uploadFile() {
-    const file = document.getElementById("fileInput").files[0];
-    if (!file) return alert("Please choose a file.");
+  <script>
+    async function uploadFile() {
+      const file = document.getElementById("fileInput").files[0];
+      if (!file) return alert("Please choose a file.");
 
-    const formData = new FormData();
-    formData.append("file", file);
+      const formData = new FormData();
+      formData.append("file", file);
 
-    document.getElementById("status").innerText = "Uploading...";
+      document.getElementById("status").innerText = "Uploading...";
 
-    const res = await fetch("https://7vxeyorb5b.execute-api.us-east-1.amazonaws.com/prod/upload", {
-      method: "POST",
-      body: formData,
-      mode: "cors"
-    });
+      try {
+        const res = await fetch("https://7vxeyorb5b.execute-api.us-east-1.amazonaws.com/prod/upload", {
+          method: "POST",
+          body: formData,
+          mode: "cors"
+        });
 
-    const result = await res.json();
-    document.getElementById("status").innerText = result.message || "Done.";
-  }
-</script>
+        const text = await res.text();  // temporary text response to debug
+        console.log(text);
+        document.getElementById("status").innerText = text;
+      } catch (error) {
+        console.error(error);
+        document.getElementById("status").innerText = "Upload failed.";
+      }
+    }
+  </script>
+</body>
+</html>
