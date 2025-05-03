@@ -2,39 +2,38 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Secure File Upload</title>
-  <!-- Favicon fix to avoid 404 -->
+  <title>Text Upload</title>
   <link rel="icon" href="data:,">
 </head>
 <body>
-  <input type="file" id="fileInput" />
-  <button onclick="uploadFile()">Upload</button>
+  <textarea id="textInput" rows="10" cols="50" placeholder="Enter your text here..."></textarea><br>
+  <input type="text" id="fileName" placeholder="Filename (e.g., note.txt)" /><br>
+  <button onclick="uploadText()">Upload</button>
   <p id="status"></p>
 
   <script>
-    async function uploadFile() {
-      const file = document.getElementById("fileInput").files[0];
-      if (!file) return alert("Please choose a file.");
+    async function uploadText() {
+      const text = document.getElementById("textInput").value;
+      const fileName = document.getElementById("fileName").value;
 
-      const formData = new FormData();
-      formData.append("file", file);
-
-      document.getElementById("status").innerText = "Uploading...";
-
-      try {
-        const res = await fetch("https://7vxeyorb5b.execute-api.us-east-1.amazonaws.com/prod/upload", {
-          method: "POST",
-          body: formData,
-          mode: "cors"
-        });
-
-        const text = await res.text();  // temporary text response to debug
-        console.log(text);
-        document.getElementById("status").innerText = text;
-      } catch (error) {
-        console.error(error);
-        document.getElementById("status").innerText = "Upload failed.";
+      if (!text || !fileName) {
+        alert("Please provide both text and filename.");
+        return;
       }
+
+      const res = await fetch("https://7vxeyorb5b.execute-api.us-east-1.amazonaws.com/prod/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          fileContent: btoa(text),  // base64 encode text
+          fileName: fileName
+        })
+      });
+
+      const result = await res.json();
+      document.getElementById("status").innerText = result.message || "Upload complete.";
     }
   </script>
 </body>
