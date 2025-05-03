@@ -2,38 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Text Upload</title>
+  <title>Secure Text Upload</title>
+  <!-- Avoid favicon 404 -->
   <link rel="icon" href="data:,">
 </head>
 <body>
-  <textarea id="textInput" rows="10" cols="50" placeholder="Enter your text here..."></textarea><br>
-  <input type="text" id="fileName" placeholder="Filename (e.g., note.txt)" /><br>
+  <h2>Secure Text Upload</h2>
+  <textarea id="textInput" rows="10" cols="50" placeholder="Enter your text here..."></textarea><br><br>
+  <input type="text" id="fileName" placeholder="Enter filename (e.g., myfile.txt)" />
   <button onclick="uploadText()">Upload</button>
   <p id="status"></p>
 
   <script>
     async function uploadText() {
       const text = document.getElementById("textInput").value;
-      const fileName = document.getElementById("fileName").value;
+      const fileName = document.getElementById("fileName").value.trim();
 
       if (!text || !fileName) {
-        alert("Please provide both text and filename.");
+        alert("Please enter text and a filename.");
         return;
       }
 
-      const res = await fetch("https://7vxeyorb5b.execute-api.us-east-1.amazonaws.com/prod/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          fileContent: btoa(text),  // base64 encode text
-          fileName: fileName
-        })
-      });
+      const base64Content = btoa(unescape(encodeURIComponent(text))); // convert to base64
 
-      const result = await res.json();
-      document.getElementById("status").innerText = result.message || "Upload complete.";
+      const payload = {
+        fileContent: base64Content,
+        fileName: fileName
+      };
+
+      document.getElementById("status").innerText = "Uploading...";
+
+      try {
+        const res = await fetch("https://7vxeyorb5b.execute-api.us-east-1.amazonaws.com/prod/upload", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+        document.getElementById("status").innerText = result.message || "Done.";
+      } catch (error) {
+        console.error("Upload failed", error);
+        document.getElementById("status").innerText = "Upload failed.";
+      }
     }
   </script>
 </body>
