@@ -24,7 +24,7 @@
       formData.append("file", fileInput.files[0]); // Add file to FormData
 
       try {
-        const response = await fetch("https://YOUR_API_GATEWAY_URL_HERE", {
+        const response = await fetch("https://7vxeyorb5b.execute-api.us-east-1.amazonaws.com/prod/upload", {
           method: "POST",
           body: formData
         });
