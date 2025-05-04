@@ -2,51 +2,55 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Secure Text Upload</title>
-  <!-- Avoid favicon 404 -->
+  <title>Secure File Upload</title>
   <link rel="icon" href="data:,">
 </head>
 <body>
-  <h2>Secure Text Upload</h2>
-  <textarea id="textInput" rows="10" cols="50" placeholder="Enter your text here..."></textarea><br><br>
-  <input type="text" id="fileName" placeholder="Enter filename (e.g., myfile.txt)" />
-  <button onclick="uploadText()">Upload</button>
+  <h2>Secure File Upload</h2>
+  <input type="file" id="fileInput" /><br><br>
+  <button onclick="uploadFile()">Upload</button>
   <p id="status"></p>
 
   <script>
-    async function uploadText() {
-      const text = document.getElementById("textInput").value;
-      const fileName = document.getElementById("fileName").value.trim();
+    async function uploadFile() {
+      const fileInput = document.getElementById("fileInput");
+      const file = fileInput.files[0];
 
-      if (!text || !fileName) {
-        alert("Please enter text and a filename.");
+      if (!file) {
+        alert("Please select a file.");
         return;
       }
 
-      const base64Content = btoa(unescape(encodeURIComponent(text))); // convert to base64
+      const reader = new FileReader();
 
-      const payload = {
-        fileContent: base64Content,
-        fileName: fileName
+      reader.onload = async function(event) {
+        const base64Content = btoa(event.target.result); // Convert binary to base64
+
+        const payload = {
+          fileContent: base64Content,
+          fileName: file.name
+        };
+
+        document.getElementById("status").innerText = "Uploading...";
+
+        try {
+          const res = await fetch("https://7vxeyorb5b.execute-api.us-east-1.amazonaws.com/prod/upload", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+          });
+
+          const result = await res.json();
+          document.getElementById("status").innerText = result.message || "Upload complete.";
+        } catch (error) {
+          console.error("Upload failed", error);
+          document.getElementById("status").innerText = "Upload failed.";
+        }
       };
 
-      document.getElementById("status").innerText = "Uploading...";
-
-      try {
-        const res = await fetch("https://7vxeyorb5b.execute-api.us-east-1.amazonaws.com/prod/upload", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(payload)
-        });
-
-        const result = await res.json();
-        document.getElementById("status").innerText = result.message || "Done.";
-      } catch (error) {
-        console.error("Upload failed", error);
-        document.getElementById("status").innerText = "Upload failed.";
-      }
+      reader.readAsBinaryString(file);
     }
   </script>
 </body>
